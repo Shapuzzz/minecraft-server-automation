@@ -12,8 +12,29 @@
       file:
         path: /opt/minecraft
         state: directory
+        mode: '0755'
 
     - name: Download Minecraft server
       get_url:
-        url: https://piston-data.mojang.com/v1/objects/server.jar
+        url: https://piston-data.mojang.com/v1/objects/e6ec2f64e6080b9b5d9b471b291c33cc7f509733/server.jar
         dest: /opt/minecraft/server.jar
+
+    - name: Accept Minecraft EULA
+      copy:
+        dest: /opt/minecraft/eula.txt
+        content: "eula=true\n"
+
+    - name: Install Minecraft service
+      copy:
+        src: minecraft.service
+        dest: /etc/systemd/system/minecraft.service
+
+    - name: Reload systemd
+      systemd:
+        daemon_reload: yes
+
+    - name: Enable and start Minecraft
+      systemd:
+        name: minecraft
+        enabled: yes
+        state: started
