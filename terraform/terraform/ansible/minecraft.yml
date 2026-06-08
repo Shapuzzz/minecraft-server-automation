@@ -1,0 +1,19 @@
+---
+- hosts: minecraft
+  become: yes
+
+  tasks:
+    - name: Install Java
+      dnf:
+        name: java-21-amazon-corretto
+        state: present
+
+    - name: Create Minecraft directory
+      file:
+        path: /opt/minecraft
+        state: directory
+
+    - name: Download Minecraft server
+      get_url:
+        url: https://piston-data.mojang.com/v1/objects/server.jar
+        dest: /opt/minecraft/server.jar
