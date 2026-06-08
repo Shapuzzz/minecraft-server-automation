@@ -1,5 +1,5 @@
 provider "aws" {
-  region = "us-east-1"
+  region = var.aws_region
 }
 
 resource "aws_security_group" "minecraft_sg" {
@@ -24,5 +24,18 @@ resource "aws_security_group" "minecraft_sg" {
     to_port     = 0
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+resource "aws_instance" "minecraft_server" {
+  ami           = "ami-05ffe3c48a9991133"
+  instance_type = var.instance_type
+
+  vpc_security_group_ids = [
+    aws_security_group.minecraft_sg.id
+  ]
+
+  tags = {
+    Name = "minecraft-server"
   }
 }
