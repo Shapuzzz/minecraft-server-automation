@@ -111,3 +111,38 @@ https://docs.ansible.com
 https://aws.amazon.com
 
 https://www.minecraft.net
+
+## Architecture Diagram
+
+```text
+Local Machine
+      |
+      v
+Terraform
+      |
+      v
+AWS EC2 Instance
+      |
+      v
+Ansible
+      |
+      v
+Minecraft Server
+      |
+      v
+Port 25565
+```
+
+## Resources
+
+Terraform Documentation:
+https://developer.hashicorp.com/terraform
+
+Ansible Documentation:
+https://docs.ansible.com
+
+AWS Documentation:
+https://aws.amazon.com
+
+Minecraft Documentation:
+https://www.minecraft.net
