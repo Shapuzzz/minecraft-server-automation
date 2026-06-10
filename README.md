@@ -2,45 +2,64 @@
 
 ## Background
 
-This project automates the deployment and configuration of a Minecraft server on AWS. The goal is to provision all infrastructure and configure the server without manually using the AWS Management Console.
+The goal of this project is to automate the deployment and setup of a Minecraft server on AWS using Terraform and Ansible.
 
-Terraform is used to create AWS resources such as the EC2 instance and security group. Ansible is used to configure the server, install Java, download Minecraft, accept the EULA, and configure the service to start automatically when the server boots.
+Terraform is used to create the AWS resources, including the EC2 instance and security group. Ansible is used to connect to the EC2 instance, install Java, create the Minecraft folder, download the Minecraft server, and accept the EULA.
 
-The final result is a fully automated pipeline that creates and configures a working Minecraft server that can be verified using Nmap.
+All commands in this tutorial are run from a local terminal. Terraform and Ansible handle the communication with AWS automatically.
+
+After everything is finished, the Minecraft server can be verified using Nmap.
 
 ---
 
 ## Requirements
 
-The following software must be installed:
+Install the following tools:
 
-* AWS CLI v2
-* Terraform v1.12+
-* Ansible Core 2.21+
-* Nmap 7.99+
+* AWS CLI
+* Terraform
+* Ansible
+* Nmap
 * Git
 
-Must also have:
+You will also need:
 
-* An AWS Academy Learner Lab account
+* AWS Academy Learner Lab
 * AWS credentials
 * An SSH key pair
 
 ---
 
-## AWS Configuration
+## AWS Setup
 
-Start the AWS Academy Learner Lab and open AWS Details.
+1. Start the AWS Academy Learner Lab.
+2. Wait for the lab to become active.
+3. Click **AWS Details**.
+4. Open the **AWS CLI** tab.
+5. Copy the credentials.
 
-Export the provided credentials into your terminal:
+Configure AWS:
 
 ```bash
-export AWS_ACCESS_KEY_ID=<access_key>
-export AWS_SECRET_ACCESS_KEY=<secret_key>
-export AWS_SESSION_TOKEN=<session_token>
+aws configure
 ```
 
-Verify that AWS CLI access is working:
+Enter:
+
+```text
+AWS Access Key ID
+AWS Secret Access Key
+Default region name: us-east-1
+Default output format: json
+```
+
+Export the session token:
+
+```bash
+export AWS_SESSION_TOKEN='YOUR_SESSION_TOKEN'
+```
+
+Check that AWS is working:
 
 ```bash
 aws sts get-caller-identity
@@ -48,26 +67,7 @@ aws sts get-caller-identity
 
 ---
 
-## Pipeline Overview
-
-The automation pipeline performs the following steps:
-
-1. Terraform initializes the AWS provider.
-2. Terraform creates a security group.
-3. Terraform creates an EC2 instance.
-4. Terraform outputs the public IP address.
-5. Ansible connects to the EC2 instance using SSH.
-6. Ansible installs Java.
-7. Ansible creates the Minecraft server directory.
-8. Ansible downloads the Minecraft server.
-9. Ansible accepts the Minecraft EULA.
-10. Ansible configures the Minecraft service.
-11. Systemd automatically manages the Minecraft service.
-12. Nmap verifies that port 25565 is open.
-
----
-
-## Architecture Diagram
+## Architecture
 
 ```text
 Local Machine
@@ -85,12 +85,12 @@ Ansible
 Minecraft Server
       |
       v
-TCP Port 25565
+Port 25565
 ```
 
 ---
 
-## Repository Structure
+## Project Files
 
 ```text
 minecraft-server-automation/
@@ -110,63 +110,105 @@ minecraft-server-automation/
 
 ## Running the Project
 
-### Step 1: Initialize Terraform
+### Clone the Repository
+
+```bash
+git clone https://github.com/Shapuzzz/minecraft-server-automation.git
+cd minecraft-server-automation
+```
+
+### Initialize Terraform
 
 ```bash
 terraform -chdir=terraform init
 ```
 
-This downloads the AWS provider and prepares Terraform.
+This downloads the required Terraform providers.
 
-### Step 2: Deploy Infrastructure
+### Create AWS Resources
 
 ```bash
 terraform -chdir=terraform apply
 ```
 
-Terraform creates the EC2 instance and security group.
+Type:
 
-After completion, Terraform outputs the public IP address.
+```text
+yes
+```
 
-### Step 3: Configure the Server
+when prompted.
+
+Terraform will create the EC2 instance and security group.
+
+After it finishes, Terraform will display the public IP address.
+
+Example:
+
+```text
+public_ip = "3.87.106.181"
+```
+
+Your IP address will be different.
+
+### Update the Inventory File
+
+Check the public IP again if needed:
+
+```bash
+terraform -chdir=terraform output
+```
+
+Edit the inventory file:
+
+```bash
+nano ansible/inventory.ini
+```
+
+Replace the IP address with the one returned by Terraform.
+
+Example:
+
+```ini
+[minecraft]
+3.87.106.181 ansible_user=ec2-user ansible_ssh_private_key_file=~/Downloads/labsuser.pem
+```
+
+Save the file and continue.
+
+### Run Ansible
 
 ```bash
 ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i ansible/inventory.ini ansible/minecraft.yml
 ```
 
-Ansible installs Java, downloads Minecraft, accepts the EULA, and configures the service.
+This installs Java, creates the Minecraft folder, downloads the server, and accepts the EULA.
 
-### Step 4: Verify the Server
+If successful, the output should end with something similar to:
+
+```text
+ok=5
+failed=0
+```
+
+### Verify the Server
+
+Run:
 
 ```bash
 nmap -sV -Pn -p T:25565 <public-ip>
+```
+
+Example:
+
+```bash
+nmap -sV -Pn -p T:25565 3.87.106.181
 ```
 
 Expected output:
 
 ```text
 25565/tcp open minecraft
-```
-
----
-
-## Minecraft Service Management
-
-The Minecraft server is managed using systemd.
-
-Benefits include:
-
-* Automatically starts after reboot
-* Automatically restarts if the service crashes
-* Supports clean shutdowns
-* Can be managed using standard Linux service commands
-
-Example commands:
-
-```bash
-sudo systemctl status minecraft
-sudo systemctl restart minecraft
-sudo systemctl stop minecraft
 ```
 
 ---
@@ -184,18 +226,26 @@ Select Multiplayer and connect using:
 Example:
 
 ```text
-18.207.164.8:25565
+3.87.106.181:25565
 ```
 
 ---
 
 ## Cleanup
 
-Destroy all AWS resources when finished:
+When finished, remove all AWS resources:
 
 ```bash
 terraform -chdir=terraform destroy
 ```
+
+Type:
+
+```text
+yes
+```
+
+when prompted.
 
 This removes the EC2 instance and security group.
 
