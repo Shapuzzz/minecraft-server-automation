@@ -16,10 +16,10 @@ After everything is finished, the Minecraft server can be verified using Nmap.
 
 Install the following tools:
 
-* AWS CLI
-* Terraform
-* Ansible
-* Nmap
+* AWS CLI v2
+* Terraform v1.12+
+* Ansible Core 2.21+
+* Nmap 7.99+
 * Git
 
 You will also need:
@@ -109,6 +109,7 @@ minecraft-server-automation/
 ---
 
 ## Running the Project
+* These steps were tested on macOS. Windows users can run the same commands using PowerShell, Git Bash, or WSL.
 
 ### Clone the Repository
 
