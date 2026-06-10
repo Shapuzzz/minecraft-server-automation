@@ -20,7 +20,7 @@ The following software must be installed:
 * Nmap 7.99+
 * Git
 
-The user must also have:
+Must also have:
 
 * An AWS Academy Learner Lab account
 * AWS credentials
